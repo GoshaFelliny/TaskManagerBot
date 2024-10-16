@@ -1,1 +1,1 @@
-BOT_TOKEN = '7636836395:AAH5hI58J-DL2atpY267uhJFPAb7U86v9qA'
+BOT_TOKEN = 'ты тут что то хотел увидеть?'
