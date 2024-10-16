@@ -12,7 +12,7 @@ bot = Bot(token=config.BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseM
 
 @router.message(Command('start'))
 async def start_handler(msg: Message):
-    await msg.answer("Привет я бот который поможет с заметками!")
+    await msg.answer("Привет я бот который поможет с заметками")
 
 
 import kb
