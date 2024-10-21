@@ -19,13 +19,13 @@ scheduler = AsyncIOScheduler()
 
 
 @router.message(Command('start'))
-async def start_handler(msg: Message):
-    await msg.answer("Введи команду /task")
+async def start_handler(message: Message):
+    await message.answer(start_text)
 
 
 @router.message(StateFilter(None), Command('task'))
 async def cmd_task(msg: Message, state: FSMContext):
-    await msg.answer(text="Введи текст задачи, а затем выбери время",
+    await msg.answer(text=chosen_task_text,
                      reply_markup=kb.cancel_keyboard)
 
     await state.set_state(UserTask.chosen_task)
@@ -35,7 +35,7 @@ async def cmd_task(msg: Message, state: FSMContext):
 async def chosen_task(message: Message, state: FSMContext):
     await state.update_data(chosen_task=message.text)
     await message.answer(
-        text='Напиши время для уведомления'
+        text=chosen_time_text
     )
     await state.set_state(UserTask.chosen_time)
 
@@ -51,7 +51,7 @@ async def chosen_time(message: Message, state: FSMContext):
 
     try:
         await message.answer(
-            text=f"Задача поставлена на {user_data['chosen_time']}"
+            text=f"Уведомление поставлено на {user_data['chosen_time']}"
         )
 
         local_timezone = pytz.timezone('Europe/Moscow')
@@ -68,9 +68,10 @@ async def chosen_time(message: Message, state: FSMContext):
 
         scheduler.add_job(send_scheduled_message, trigger, args=[message.chat.id, f"{user_data['chosen_task']}"], )
         scheduler.start()
+        await state.clear()
 
     except ValueError:
-        await message.answer(text="Не коретный формат!")
+        await message.answer(text=warning_time_text)
         await state.clear()
 
 
@@ -78,4 +79,4 @@ async def chosen_time(message: Message, state: FSMContext):
 async def cancel_task(callback_query: CallbackQuery, state: FSMContext):
     await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
     await state.clear()
-    await callback_query.answer("Задача отменена")
+
