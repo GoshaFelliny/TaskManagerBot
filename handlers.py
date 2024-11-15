@@ -40,14 +40,8 @@ async def chosen_task(message: Message, state: FSMContext):
     await state.set_state(UserTask.chosen_time)
 
 
-async def send_scheduled_message(chat_id: int, task: str):
+async def send_scheduled_message(chat_id: int, task:str):
     await bot.send_message(chat_id, f"Напоминание: {task}")
-
-
-#Будущая функция, использовать потом
-async def send_assessment_mood(chat_id):
-    await bot.send_message(chat_id, f"Оцените ваше настроение",
-                           reply_markup=kb.make_row_keyboard(['🤩', '😎', '🤯', '🥰', '😭']))
 
 
 @router.message(UserTask.chosen_time, F.text)
@@ -56,6 +50,9 @@ async def chosen_time(message: Message, state: FSMContext):
     user_data = await state.get_data()
 
     try:
+        await message.answer(
+            text=f"Уведомление поставлено на {user_data['chosen_time']}"
+        )
 
         local_timezone = pytz.timezone('Europe/Moscow')
         now = datetime.now(local_timezone)
@@ -71,11 +68,6 @@ async def chosen_time(message: Message, state: FSMContext):
 
         scheduler.add_job(send_scheduled_message, trigger, args=[message.chat.id, f"{user_data['chosen_task']}"], )
         scheduler.start()
-
-        await message.answer(
-            text=f"Уведомление поставлено на {user_data['chosen_time']}"
-        )
-
         await state.clear()
 
     except ValueError:
@@ -87,3 +79,4 @@ async def chosen_time(message: Message, state: FSMContext):
 async def cancel_task(callback_query: CallbackQuery, state: FSMContext):
     await bot.delete_message(chat_id=callback_query.from_user.id, message_id=callback_query.message.message_id)
     await state.clear()
+
